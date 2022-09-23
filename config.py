@@ -214,7 +214,7 @@ class Configuration():
 
 
     def get_sql_params(self):
-        key = "WvZ-GMMj-6zDAGuemaPBLGcX9cDyNQwwpoulToBLGaQ="
+        key = "TOP SECRET"
         return {
                 "sql_odbc":self.sql_odbc,
                 "sql_server":self.sql_server,
