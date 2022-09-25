@@ -1,8 +1,4 @@
-import imp
-from importlib import import_module
 from sys import exc_info
-from tkinter import N
-from urllib.parse import non_hierarchical
 from pandas import read_excel, read_sql_query, read_sql_table, DataFrame, ExcelWriter
 from sqlalchemy import text
 import xlsxwriter
@@ -41,16 +37,16 @@ class Excel():
 
         try:
             if(export_type == 'table'):
-                export_table = params["sql_table_export"]
+                export = params["sql_table_export"]
 
                 self.log.info("Export: Getting results from SQL by table")
-                query = read_sql_table(export_table, conn)
 
             elif(export_type == 'script'):
-                export_script = params["sql_script_export"]
+                export = params["sql_script_export"]
 
                 self.log.info("Export: Getting results from SQL by SQL")
-                query = read_sql_query(export_script, conn)
+
+            query = read_sql_query(export, conn)
 
             out_engine = ExcelWriter(output, engine="xlsxwriter")
             df = DataFrame(query)

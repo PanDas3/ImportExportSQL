@@ -67,11 +67,11 @@ class Database():
                 elif(table_to_check[1] == table_chceck):
                     if(count == 1):
                         self.log.info(f"Backup table {tab[0]} exists")
-                        table_backup = f"{table_backup}_v{count+1}"
 
                     elif(count >= 2):
-                        self.log.info(f"Table {tab[count-1]} exists")
-                        table_backup = f"{table_backup}_v{count+1}"
+                        self.log.info(f"Backup table {tab[count-1]} exists")
+
+                    table_backup = f"{table_backup}_v{count+1}"
 
             sql_query = f"""SELECT * INTO [dbo].[{table_backup}
             FROM [dbo].[{table}]"""
