@@ -51,7 +51,7 @@ class Log():
                 errors.append("Line: %s - %s" % (i+1, match.group()))
 
             if(len(errors) == 0):
-                return None
+                return False
 
             else:
                 string = """"""
@@ -62,6 +62,6 @@ class Log():
 
     def __del__(self):
         del self.log
-        del self.currentdate
+        del self.log_name
         del self.root_path
         del self.currentdate

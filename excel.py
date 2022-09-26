@@ -20,16 +20,18 @@ class Excel():
 
                 self.log.info("Import: Read excel file to import")
                 df = read_excel(sql_file)
+                df.drop(df.columns[df.columns.str.contains('unamed', case=False)], axis = 1, inplace=True)
                 print(df)
 
                 self.log.info(f"Import: Import excel to SQL with mode: {import_mode}")
                 print("Importing...")
-                df.to_excel(sql_table, conn, schema="dbo", if_exists=import_mode, index=False, chunksize=800)
+                df.to_sql(sql_table, conn, schema="dbo", if_exists=import_mode, index=False, chunksize=800)
                 print("Import completed")
                 self.log.info("Import completed")
 
         except:
             self.log.error(exc_info()[:-1])
+            exit(1)
 
     def export_excel(self, conn, params):
         export_type = params["sql_export_type"]
@@ -37,16 +39,16 @@ class Excel():
 
         try:
             if(export_type == 'table'):
-                export = params["sql_table_export"]
+                export_table = params["sql_table_export"]
 
                 self.log.info("Export: Getting results from SQL by table")
+                query = read_sql_table(export_table, conn)
 
             elif(export_type == 'script'):
-                export = params["sql_script_export"]
+                export_script = params["sql_script_export"]
 
                 self.log.info("Export: Getting results from SQL by SQL")
-
-            query = read_sql_query(export, conn)
+                query = read_sql_query(export_script, conn)
 
             out_engine = ExcelWriter(output, engine="xlsxwriter")
             df = DataFrame(query)
@@ -58,6 +60,7 @@ class Excel():
 
         except:
             self.log.error(exc_info()[:-1])
+            exit(1)
 
     def __del__(self) -> None:
         del self.log

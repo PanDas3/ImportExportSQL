@@ -1,4 +1,3 @@
-from cgitb import reset
 from sys import exc_info
 from os import getcwd, path
 from gc import collect
@@ -44,24 +43,18 @@ if(__name__ == "__main__"):
 
         elif(sql_params["sql_mode"] == 'import'):
             import_params = cfg.get_import_params() # if import mode = both return tuple(dict(replace and append) ? return tuple dict(replace or append))
-            if(len(import_params) == 2):
+
+            if(type(import_params) == dict):
+                import_params = [import_params]
+
+            elif(type(import_params) == tuple):
                 import_params = list(import_params)
 
-                for params in import_params:
-                    conn = db.connect(sql_params)
-                    db.sql_backup(conn[0], params)
-                    db.import_sql(conn[0], params)
-                    excel.import_excel(conn[0], params)
-
-            else:
+            for params in import_params:
                 conn = db.connect(sql_params)
-                db.sql_backup(conn[0], import_params)
-                db.import_sql(conn[0], import_params)
-                excel.import_excel(conn[0], import_params)
-
-        result = log.search_error()
-        smtp.send_mail(smtp_params, result)
-        sms.send_sms(sms_params, result)
+                db.sql_backup(conn[0], params)
+                db.import_sql(conn[0], params)
+                excel.import_excel(conn[0], params)
 
     except SystemExit:
         log.warning("!!! STOP SCRIPT !!!")

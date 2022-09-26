@@ -1,5 +1,3 @@
-from cgi import print_arguments
-from cgitb import reset
 from sys import exc_info, exit
 from urllib import parse
 from sqlalchemy import create_engine, text
@@ -29,7 +27,7 @@ class Database():
             elif(trusted == False):
                 connection_string = parse.quote_plus(f"DRIVER={odbc}; SERVER={server}; PORT={port}; Database={db}; UID={user}; PWD={passwd}")
 
-            db_conn = create_engine("mssql+pyodbc:////?odbc_connect={}".format(connection_string))
+            db_conn = create_engine("mssql+pyodbc:///?odbc_connect={}".format(connection_string))
             conn = db_conn.connect()
 
             self.log.info(f"Connected to {server}")
@@ -48,8 +46,8 @@ class Database():
         table_to_check = [table, table_backup]
 
         try:
-            for table_chceck in table_to_check:
-                sql_check_table = f"SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME like N'%{table_chceck}%'"
+            for table_check in table_to_check:
+                sql_check_table = f"SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME like N'%{table_check}%'"
                 self.log.info("Checking SQL Table")
                 result = conn.execute(text(sql_check_table))
 
@@ -59,22 +57,27 @@ class Database():
 
                 count = len(tab)
 
-                if((count == 0) and (table_to_check[0] == table_chceck)):
-                    self.log.warning(f"Not found table {table_chceck} to backup")
+                if((count == 0) and (table_to_check[0] == table_check)):
+                    self.log.warning(f"Not found table {table_check} to backup")
                     self.log.warning("Next operation will be aborted")
                     exit(1)
 
-                elif(table_to_check[1] == table_chceck):
-                    if(count == 1):
+                elif(table_to_check[1] == table_check):
+
+                    if(count == 0):
+                        self.log.info("No found table backup")
+
+                    elif(count == 1):
                         self.log.info(f"Backup table {tab[0]} exists")
+                        table_backup = f"{table_backup}_v{count}"
 
                     elif(count >= 2):
                         self.log.info(f"Backup table {tab[count-1]} exists")
-
-                    table_backup = f"{table_backup}_v{count+1}"
+                        table_backup = f"{table_backup}_v{count+1}"
 
             sql_query = f"""SELECT * INTO [dbo].[{table_backup}
-            FROM [dbo].[{table}]"""
+            FROM [dbo].[{table}]
+            COMMIT"""
 
             conn.execute(text(sql_query))
             self.log.info(f"Created new backup table {table_backup} from {table}")
@@ -84,9 +87,10 @@ class Database():
 
         except:
             self.log.error(exc_info()[:-1])
+            exit(1)
 
     def import_sql(self, conn, params):
-        sql_type = params["sql_type_file"]
+        sql_type = params["sql_file_type"]
         try:
             if(sql_type == "sql"):
                 sql_script = params["sql_script"]
@@ -98,6 +102,7 @@ class Database():
 
         except:
             self.log.error(exc_info()[:-1])
+            exit(1)
 
     def disconnect(self, conn, db_conn):
         try:
